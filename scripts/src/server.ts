@@ -19,7 +19,8 @@ import { Future } from "./types";
 
 const BASE = __dirname + "/../../";
 
-export type CommandHandler = (ctx: Router.IRouterContext, next: () => Promise<any>) => any;
+export type CommandHandlerContext = Router.IRouterContext;
+export type CommandHandler = (ctx: CommandHandlerContext, next: () => Promise<any>) => any;
 
 export type CommandEndpoint = {
 	method: string;
@@ -115,7 +116,7 @@ export class Builder {
 		}
 
 		endpoints.roots.forEach(value => {
-			Object.assign(value, { remote: Object.assign({}, remote, { base: value.remote.base }) });
+			Object.assign(value, { remote: Object.assign({}, remote, { base: value.remote ? value.remote.base : "/" } ) });
 		});
 
 		return endpoints;
@@ -244,6 +245,6 @@ class ServerImpl implements Server {
 
 	private serveModule(module: descriptors.NamedModule, ctx: Koa.Context) {
 		ctx.type = "application/json";
-		ctx.body = JSON.stringify(module);
+		ctx.body = module;
 	}
 }

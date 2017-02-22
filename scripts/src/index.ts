@@ -74,6 +74,9 @@ const EchoModule = {
 	}
 } as descriptors.RootModule;
 
+export { CommandHandler, CommandHandlerContext } from "./server";
+export * from "./descriptors"
+
 export class Builder {
 	public static readonly DEFAULT_ROOT_PATH = "descriptor.json";
 
@@ -113,7 +116,7 @@ export class Builder {
 	}
 
 	build(): Connector {
-		if (this._modules.empty()) {
+		if (this._rootModules.empty()) {
 			this.module("/examples/remote/descriptor.json", EchoModule, true);
 			this.command("/examples/remote/echo", "get", (ctx) => {
 				ctx.body = ctx.request.query.str;
@@ -142,6 +145,8 @@ export class Builder {
 
 export interface Connector {
 	readonly server: server.Server;
+	readonly logger: winston.LoggerInstance;
+
 	start(): Promise<Connector>;
 }
 
@@ -156,6 +161,10 @@ class ConnectorImpl implements Connector {
 
 	get server() {
 		return this._server;
+	}
+
+	get logger() {
+		return this._logger;
 	}
 
 	start() {

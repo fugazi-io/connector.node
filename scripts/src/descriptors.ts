@@ -34,7 +34,7 @@ export interface RemoteDescriptor {
 export interface Module extends Component {
 	converters?: string[];
 	constraints?: string[];
-	types?: ComponentMap<Named<Type>>;
+	types?: ComponentMap<Type>;
 	modules?: ComponentMap<InnerModule> | Array<string | Named<InnerModule>>;
 	commands?: ComponentMap<RemoteCommand> | Array<string | Named<RemoteCommand>>;
 }
