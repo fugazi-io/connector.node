@@ -8,7 +8,8 @@ import * as http from "http";
 import * as winston from "winston";
 
 const destroyable = require("server-destroy");
-const bodyparser = require("koa-bodyparser");
+//const bodyparser = require("koa-bodyparser");
+import bodyparser = require("koa-bodyparser");
 import * as Router from "koa-router";
 import cors = require("kcors");
 
@@ -19,7 +20,11 @@ import { Future } from "./types";
 
 const BASE = __dirname + "/../../";
 
-export type CommandHandlerContext = Router.IRouterContext;
+export var moo = "cow";
+
+export type CommandHandlerContext = Router.IRouterContext & {
+
+};
 export type CommandHandler = (ctx: CommandHandlerContext, next: () => Promise<any>) => any;
 
 export type CommandEndpoint = {
@@ -163,7 +168,7 @@ class ServerImpl implements Server {
 			this.logger.info(`server started. listening on ${ this.host }:${ this.port }`);
 			this.logger.info("you can load the following urls from any fugazi terminal:");
 			for (let path of this.endpoints.roots.keys()) {
-				this.logger.info(`\t$http://localhost:${ this.port }${ path }`);
+				this.logger.info(`http://localhost:${ this.port }${ path }`);
 			}
 			future.resolve(this);
 		});
@@ -235,7 +240,7 @@ class ServerImpl implements Server {
 		});
 
 		this.endpoints.commands.forEach((command, path) => {
-			this.router.register(path, [command.method], command.handler);
+			this.router.register(path, [command.method], commandHandlerWrapper.bind(null, command.handler));
 		});
 
 		this.koa
@@ -247,4 +252,9 @@ class ServerImpl implements Server {
 		ctx.type = "application/json";
 		ctx.body = module;
 	}
+}
+
+function commandHandlerWrapper(handler: CommandHandler, ctx: CommandHandlerContext, next: () => Promise<any>) {
+	ctx.set("Cache-Control", "no-cache, no-store, must-revalidate");
+	return handler(ctx, next);
 }
