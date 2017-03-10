@@ -6,20 +6,25 @@ That includes:
 * An http server
 * The ability to add modules, either as files or as raw js objects
 * The ability to add (remote) commands as js objects and functions
-* Autmatically adds [remote config](https://github.com/fugazi-io/webclient/blob/master/docs/components/modules.md#remote-module)
+* Automatically adds [remote config](https://github.com/fugazi-io/webclient/blob/master/docs/components/modules.md#remote-module)
 * Supports [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) or serves a proxy frame instead
 * A ready to use logger
+
+## Installing
+The package can be found in [npm @fugazi/connector](https://www.npmjs.com/package/@fugazi/connector).  
+Then simply:
+```bash
+npm install --save @fugazi/connector
+```
 
 ## Running
 The package comes with a (very) simple example to illustrate what the connector does.  
 The example includes a single remote command which expects a value (`any`) and returns this value.  
 
 To run the example:
-
-1. Clone this repo (let's say that it was cloned to `/CONNECTOR`)
-2. Install dependencies: `/CONNECTOR > npm install`
-3. Compile the scripts: `/CONNECTOR > ./node_modules/typescript/bin/tsc -p ./scripts`
-4. Run the example: `/CONNECTOR > node ./scripts/bin/index.js`
+```bash
+/CONNECTOR/PATH > node ./scripts/bin/index.js
+```
 
 You should now see that the connector is up and running and it should print the url for the descriptor, something like:
 ```
@@ -35,13 +40,6 @@ After the loaded was loaded try it:
 `remote echo hey`
 
 ## Using as a package
-The package isn't published to npm yet, so in order to use it you'll have to use [npm link](https://docs.npmjs.com/cli/link): 
-
-1. `/CONNECTOR > npm link`
-2. In the project which you want to use the connector in: `/MY_PROJECT > npm link fugazi.connector.node`
-
-Now you can import the package from your modules.
-
 Example of usage:
 ```
 import * as fugazi from "fugazi.connector.node";
@@ -58,3 +56,11 @@ builder.command("/endpoint", "get", command);
 const connector = builder.build();
 connector.start();
 ```
+
+## Using when cloning
+1. Clone this repo (let's say that it was cloned to `/CONNECTOR/PATH`)
+2. Install dependencies: `/CONNECTOR/PATH > npm install`
+3. Compile the scripts:  
+`/CONNECTOR/PATH > ./node_modules/typescript/bin/tsc -p ./scripts`
+
+The rest is the same as the sections above.
