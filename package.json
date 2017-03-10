@@ -1,8 +1,9 @@
 {
-  "name": "fugazi.connector.node",
-  "version": "1.0.2",
+  "name": "@fugazi/connector",
+  "version": "1.0.5",
   "description": "basic functionality needed for creating a new fugazi connector using nodejs",
-  "main": "scripts/bin/index.js",
+  "main": "./scripts/bin/index.js",
+  "types": "./scripts/bin/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
