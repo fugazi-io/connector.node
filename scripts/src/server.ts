@@ -4,11 +4,11 @@
 
 import * as fs from "fs";
 import * as Koa from "koa";
+import * as path from "path";
 import * as http from "http";
 import * as winston from "winston";
 
 const destroyable = require("server-destroy");
-//const bodyparser = require("koa-bodyparser");
 import bodyparser = require("koa-bodyparser");
 import * as Router from "koa-router";
 import cors = require("kcors");
@@ -18,9 +18,10 @@ import { middleware as statics } from "./middleware/statics";
 import * as descriptors from "./descriptors";
 import { Future } from "./types";
 
-const BASE = __dirname + "/../../";
+const pathFor = path.join.bind(path, __dirname, "../../");
 
-export var moo = "cow";
+// needed so that the Request object will have the body property
+export { bodyparser as bodyparser };
 
 export type CommandHandlerContext = Router.IRouterContext & {
 
@@ -49,9 +50,11 @@ export class Builder {
 	private _cors: boolean;
 	private _corsOptions: cors.Options;
 	private _logger: winston.LoggerInstance;
+	private _staticFiles: Map<string, string>;
 	private _endpointsProvider: EndpointsProvider;
 
 	constructor(provider: EndpointsProvider) {
+		this._staticFiles = new Map();
 		this._endpointsProvider = provider;
 	}
 
@@ -76,6 +79,11 @@ export class Builder {
 			}
 		}
 
+		return this;
+	}
+
+	serve(urlPath: string, filePath: string): this {
+		this._staticFiles.set(urlPath, filePath);
 		return this;
 	}
 
@@ -122,6 +130,10 @@ export class Builder {
 
 		endpoints.roots.forEach(value => {
 			Object.assign(value, { remote: Object.assign({}, remote, { base: value.remote ? value.remote.base : "/" } ) });
+		});
+
+		this._staticFiles.forEach((file, url) => {
+			endpoints.files.set(url, file);
 		});
 
 		return endpoints;
@@ -202,8 +214,12 @@ class ServerImpl implements Server {
 	private setupStatics() {
 		const routes = new Map<string, string>();
 		const appender = ({ path, file }: { path: string; file: string }) => {
-			if (!fs.existsSync(BASE + file)) {
-				throw new Error(`file  for path "${ path } " doesn't exist in "${ BASE + file }"`);
+			if (file[0] !== "/") {
+				file = pathFor(file);
+			}
+
+			if (!fs.existsSync(file)) {
+				throw new Error(`file for path "${ path } " doesn't exist in "${ file }"`);
 			}
 
 			routes.set(path, file);

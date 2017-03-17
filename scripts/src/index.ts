@@ -75,7 +75,7 @@ const EchoModule = {
 } as descriptors.RootModule;
 
 export { CommandHandler, CommandHandlerContext } from "./server";
-export * from "./descriptors"
+export * from "./descriptors";
 
 export class Builder {
 	public static readonly DEFAULT_ROOT_PATH = "descriptor.json";
