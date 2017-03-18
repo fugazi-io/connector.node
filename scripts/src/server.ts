@@ -23,9 +23,7 @@ const pathFor = path.join.bind(path, __dirname, "../../");
 // needed so that the Request object will have the body property
 export { bodyparser as bodyparser };
 
-export type CommandHandlerContext = Router.IRouterContext & {
-
-};
+export type CommandHandlerContext = Router.IRouterContext & {};
 export type CommandHandler = (ctx: CommandHandlerContext, next: () => Promise<any>) => any;
 
 export type CommandEndpoint = {

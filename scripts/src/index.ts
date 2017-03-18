@@ -77,6 +77,9 @@ const EchoModule = {
 export { CommandHandler, CommandHandlerContext } from "./server";
 export * from "./descriptors";
 
+const pjson = require("../../package.json");
+export const VERSION = pjson.version as string;
+
 export class Builder {
 	public static readonly DEFAULT_ROOT_PATH = "descriptor.json";
 
@@ -190,5 +193,7 @@ function cleanup(logger: winston.LoggerInstance) {
 if (require.main === module) {
 	const builder = new Builder();
 	const connector = builder.build();
-	connector.start();
+	connector.start().then(() => {
+		connector.logger.info(`connector version ${ VERSION } started`);
+	});
 }
