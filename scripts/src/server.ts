@@ -24,56 +24,82 @@ import { ConnectorBuilder } from "./connector";
 
 export type HttpMethod = "get" | "GET" | "put" | "PUT" | "post" | "POST" | "delete" | "DELETE";
 
+export type RequestData = {
+	(name: string): string;
+	body(name: string): string;
+	path(name: string): string;
+	search(name: string): string;
+}
 export type Request = {
 	path: string;
-	data: {
-		body: ExtendedMap<string, string>;
-		path: ExtendedMap<string, string>;
-		search: ExtendedMap<string, string>;
-	};
+	data: RequestData;
 	headers: ExtendedMap<string, string>;
+}
+export enum ResponseStatus {
+	Success,
+	Failure
 }
 export type Response = {
 	headers?: { [name: string]: string } | Map<string, string>;
-	status?: number;
+	status?: ResponseStatus;
 	data?: any;
 }
-function parse(ctx: Router.IRouterContext): Request {
-	const parsedRequest = {
-		path: ctx.path,
-		data: {
-			body: new ExtendedMap<string, string>(),
-			path: new ExtendedMap<string, string>(),
-			search: new ExtendedMap<string, string>()
-		},
-		headers: new ExtendedMap<string, string>()
+function createRequestData(body: ExtendedMap<string, string>, path: ExtendedMap<string, string>, search: ExtendedMap<string, string>): RequestData {
+	const data = function(name: string): string {
+		if (body.has(name)) {
+			return body.get(name)!;
+		}
+
+		if (path.has(name)) {
+			return path.get(name)!;
+		}
+
+		return search.get(name)!;
+	} as RequestData;
+
+	const specific = function(map: ExtendedMap<string, string>, name: string): string {
+		return map.get(name)!;
 	}
 
-	ctx.path
+	data.body = specific.bind(data, body);
+	data.path = specific.bind(data, path);
+	data.search = specific.bind(data, search);
+
+	return data;
+}
+function parse(ctx: Router.IRouterContext): Request {
+	const body = new ExtendedMap<string, string>();
+	const path = new ExtendedMap<string, string>();
+	const search = new ExtendedMap<string, string>();
+	const headers = new ExtendedMap<string, string>();
 
 	Object.keys(ctx.headers).forEach(key => {
-		parsedRequest.headers.set(key, ctx.headers[key]);
+		headers.set(key, ctx.headers[key]);
 	});
 
 	if (ctx.params) {
 		Object.keys(ctx.params).forEach(key => {
-			parsedRequest.data.path.set(key, ctx.params[key]);
+			path.set(key, ctx.params[key]);
 		});
 	}
 
 	if (ctx.query) {
 		Object.keys(ctx.query).forEach(key => {
-			parsedRequest.data.search.set(key, ctx.query[key]);
+			search.set(key, ctx.query[key]);
 		});
 	}
 
 	if (ctx.request.body) {
 		Object.keys(ctx.request.body).forEach(key => {
-			parsedRequest.data.body.set(key, ctx.request.body[key]);
+			body.set(key, ctx.request.body[key]);
 		});
 	}
 
-	return parsedRequest;
+	return {
+		headers,
+		path: ctx.path,
+		data: createRequestData(body, path, search)
+	};
 }
 
 /**
@@ -365,9 +391,9 @@ function handleError(ctx: Router.IRouterContext, error: any) {
 	}
 
 	ctx.type = "application/json";
-	ctx.status = 404;
+	ctx.status = 400;
 	ctx.body = {
-		status: 1, // value for fugazi.components.commands.handler.ResultStatus.Failure
+		status: ResponseStatus.Failure,
 		error: message
 	};
 }
@@ -392,7 +418,7 @@ async function handleResponse(ctx: Router.IRouterContext, response: Response | P
 
 	ctx.type = "application/json";
 	ctx.body = {
-		status: 0, // value for fugazi.components.commands.handler.ResultStatus.Success
+		status: typeof response.status === "number" ? response.status : ResponseStatus.Success,
 		value
 	}
 }

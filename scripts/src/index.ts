@@ -40,7 +40,7 @@ function createEchoModule(connectorBuilder: ConnectorBuilder): void {
 						syntax: "remote echo (str string)"
 					})
 					.handler((request) => {
-						return { data: request.data.search.get("str") };
+						return { data: request.data("str") };
 					});
 }
 
