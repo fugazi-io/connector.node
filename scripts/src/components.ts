@@ -190,6 +190,7 @@ type FileHandler = {
 export abstract class ModuleBuilder<P = any, C extends descriptors.Module = descriptors.Module> extends ComponentBuilder<P, C>{
 	private _files: ExtendedArray<FileHandler>;
 	private _types: ExtendedMap<string, TypeBuilder>;
+	private _modules: ExtendedMap<string, InnerModuleBuilder>;
 	private _commands: ExtendedMap<string, RemoteCommandBuilder>;
 
 	constructor(parent: P, serverBuilder: server.ServerBuilder) {
@@ -197,6 +198,7 @@ export abstract class ModuleBuilder<P = any, C extends descriptors.Module = desc
 
 		this._files = new ExtendedArray<FileHandler>();
 		this._types = new ExtendedMap<string, TypeBuilder>();
+		this._modules = new ExtendedMap<string, InnerModuleBuilder>();
 		this._commands = new ExtendedMap<string, RemoteCommandBuilder>();
 	}
 
@@ -209,6 +211,16 @@ export abstract class ModuleBuilder<P = any, C extends descriptors.Module = desc
 					this.types(type);
 				} else {
 					this.type(type);
+				}
+			});
+		}
+
+		if (descriptor.modules) {
+			descriptors.collectionIterator(descriptor.modules).forEach((module) => {
+				if (typeof module === "string") {
+					this.modules(module);
+				} else {
+					this.module(module as descriptors.NamedModule);
 				}
 			});
 		}
@@ -312,6 +324,48 @@ export abstract class ModuleBuilder<P = any, C extends descriptors.Module = desc
 		return this.file("constraint", first, second!);
 	}
 
+	module(name: string): ModuleBuilder;
+	module(descriptor: descriptors.NamedModule): this;
+	module(name: string, descriptor: descriptors.Module): this;
+	module(first: string | descriptors.NamedModule, second?: descriptors.Module): this | ModuleBuilder {
+		let name: string,
+			descriptor: descriptors.NamedModule | undefined,
+			builder: InnerModuleBuilder;
+
+		if (second) {
+			name = first as string;
+			descriptor = Object.assign({}, second) as descriptors.NamedModule;
+			descriptor.name = name;
+		} else if (typeof first === "string") {
+			name = first;
+		} else {
+			name = first.name;
+			descriptor = Object.assign({}, first);
+		}
+
+		if (this._modules.has(name)) {
+			builder = this._modules.get(name)!;
+		} else {
+			builder = new InnerModuleBuilder(this, this._server);
+			this._modules.set(name, builder);
+		}
+
+		builder.name(name);
+
+		if (descriptor) {
+			builder.descriptor(descriptor);
+			return this;
+		}
+
+		return builder;
+	}
+
+	modules(file: string): this;
+	modules(endpoint: string, file: string): this;
+	modules(first: string, second?: string): this {
+		return this.file("module", first, second!);
+	}
+
 	build(): descriptors.Named<C> {
 		this._files.forEach(file => {
 			this._server.file(file.path, file.file);
@@ -324,7 +378,7 @@ export abstract class ModuleBuilder<P = any, C extends descriptors.Module = desc
 			descriptor.types = [];
 
 			this._types.forEach(type => (descriptor.types as Array<string | descriptors.NamedType>).push(type.build()));
-			typeFiles.forEach(file => (descriptor.types as Array<string | descriptors.NamedType>).push(file.path));
+			typeFiles.forEach(file => (descriptor.types as Array<string | descriptors.NamedType>).push(this._server.getUrlFor(file.path)));
 		} else if (!this._types.empty()) {
 			descriptor.types = {};
 			this._types.forEach(typeBuilder => {
@@ -338,7 +392,7 @@ export abstract class ModuleBuilder<P = any, C extends descriptors.Module = desc
 			descriptor.commands = [];
 
 			this._commands.forEach(command => (descriptor.commands as Array<string | descriptors.NamedRemoteCommand>).push(command.build()));
-			commandFiles.forEach(file => (descriptor.commands as Array<string | descriptors.NamedRemoteCommand>).push(file.path));
+			commandFiles.forEach(file => (descriptor.commands as Array<string | descriptors.NamedRemoteCommand>).push(this._server.getUrlFor(file.path)));
 		} else if (!this._commands.empty()) {
 			descriptor.commands = {};
 			this._commands.forEach(commandBuilder => {
@@ -350,19 +404,27 @@ export abstract class ModuleBuilder<P = any, C extends descriptors.Module = desc
 		const converterFiles = this._files.filter(file => file.type === "converter");
 		if (!converterFiles.empty()) {
 			descriptor.converters = [];
-			converterFiles.forEach(file => descriptor.converters!.push(file.path));
+			converterFiles.forEach(file => descriptor.converters!.push(this._server.getUrlFor(file.path)));
 		}
 
 		const constraintFiles = this._files.filter(file => file.type === "constraint");
 		if (!constraintFiles.empty()) {
 			descriptor.constraints = [];
-			constraintFiles.forEach(file => descriptor.constraints!.push(file.path));
+			constraintFiles.forEach(file => descriptor.constraints!.push(this._server.getUrlFor(file.path)));
 		}
 
 		const moduleFiles = this._files.filter(file => file.type === "module");
 		if (!moduleFiles.empty()) {
 			descriptor.modules = [];
-			moduleFiles.forEach(file => (descriptor.modules as Array<string | descriptors.NamedModule>).push(file.path));
+
+			this._modules.forEach(module => (descriptor.modules as Array<string | descriptors.NamedModule>).push(module.build()));
+			moduleFiles.forEach(file => (descriptor.modules as Array<string | descriptors.NamedModule>).push(this._server.getUrlFor(file.path)));
+		} else if (!this._modules.empty()) {
+			descriptor.modules = {};
+			this._modules.forEach(moduleBuilder => {
+				const module = moduleBuilder.build();
+				(descriptor.modules as descriptors.ComponentMap<descriptors.Module>)[module.name] = module;
+			});
 		}
 
 		return descriptor;
@@ -376,8 +438,12 @@ export abstract class ModuleBuilder<P = any, C extends descriptors.Module = desc
 			path = first;
 			file = second;
 		} else {
-			path = type + this._files.length;
 			file = first;
+			path = file.substring(file.lastIndexOf("/"));
+		}
+
+		if (!path.startsWith("/")) {
+			path = "/" + path;
 		}
 
 		this._files.push({

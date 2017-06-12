@@ -202,6 +202,10 @@ export class ServerBuilder {
 		return `http://${ this.getHost() }:${ this.getPort() }`;
 	}
 
+	getUrlFor(relativePath: string): string {
+		return this.getOrigin() + (relativePath.startsWith("/") ? relativePath : "/" + relativePath);
+	}
+
 	getProxy(): string | null {
 		return this._proxy ? ServerBuilder.PROXY_PATH : null;
 	}
