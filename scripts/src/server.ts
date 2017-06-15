@@ -24,11 +24,15 @@ import { ConnectorBuilder } from "./connector";
 
 export type HttpMethod = "get" | "GET" | "put" | "PUT" | "post" | "POST" | "delete" | "DELETE";
 
-export type RequestData = {
+export type RequestDataGetter = {
 	(name: string): string;
-	body(name: string): string;
-	path(name: string): string;
-	search(name: string): string;
+	has(name: string): boolean;
+}
+
+export type RequestData = RequestDataGetter & {
+	body: RequestDataGetter;
+	path: RequestDataGetter;
+	search: RequestDataGetter;
 }
 export type Request = {
 	path: string;
@@ -57,13 +61,18 @@ function createRequestData(body: ExtendedMap<string, string>, path: ExtendedMap<
 		return search.get(name)!;
 	} as RequestData;
 
-	const specific = function(map: ExtendedMap<string, string>, name: string): string {
-		return map.get(name)!;
+	data.has = function(name: string): boolean {
+		return body.has(name) || path.has(name) || search.has(name);
 	}
 
-	data.body = specific.bind(data, body);
-	data.path = specific.bind(data, path);
-	data.search = specific.bind(data, search);
+	data.body = body.get.bind(body);
+	data.body.has = body.has.bind(body);
+
+	data.path = path.get.bind(path);
+	data.path.has = path.has.bind(path);
+
+	data.search = search.get.bind(search);
+	data.search.has = search.has.bind(search);
 
 	return data;
 }
