@@ -172,12 +172,22 @@ export class RemoteCommandBuilder extends ComponentBuilder<ModuleBuilder, descri
 
 		this._server.command({
 			method,
-			path: endpoint,
+			path: normalizeEndpointForServer(endpoint),
 			handler: this._handler
 		});
 
 		return descriptor;
 	}
+}
+
+function normalizeEndpointForServer(endpoint: string): string {
+	const re = /\{\s*([a-zA-Z0-9]+)\s*\}/g;
+	let match: RegExpExecArray | null;
+	while ((match = re.exec(endpoint)) !== null) {
+		endpoint = endpoint.replace(match[0], ":" + match[1]);
+	}
+
+	return endpoint;
 }
 
 type ComponentType = "type" | "module" | "command" | "converter" | "constraint";
