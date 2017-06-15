@@ -128,6 +128,7 @@ export type CommandEndpoint = {
 const pathFor = path.join.bind(path, __dirname, "../../../");
 
 type Route = {
+	type: "command" | "root-module";
 	path: string;
 	method: HttpMethod;
 	handler: Router.IMiddleware
@@ -213,11 +214,13 @@ export class ServerBuilder {
 		const routes = [] as Route[];
 
 		this._modules.forEach((descriptor, name) => routes.push({
+			type: "root-module",
 			path: `/${ name }.json`,
 			method: "get",
 			handler: serveModule.bind(this, descriptor)
 		}));
 		this._commands.forEach(command => routes.push({
+			type: "command",
 			path: command.path,
 			method: command.method,
 			handler: commandHandlerWrapper.bind(null, command.handler)
@@ -315,6 +318,8 @@ class _Server implements Server {
 		this.koa
 			.use(this.router.routes())
 			.use(this.router.allowedMethods());
+
+		this.logRoutes(routes, files);
 	}
 
 	start(): Promise<void> {
@@ -349,9 +354,9 @@ class _Server implements Server {
 
 	private setupRoutes(routes: Route[]) {
 		//TODO: this should be done using the logger
-		console.log("serving routes:");
+		//console.log("serving routes:");
 		routes.forEach(route => {
-			console.log(`${ route.method } : ${ route.path }`);
+			//console.log(`${ route.method } : ${ route.path }`);
 			switch (route.method.toLocaleLowerCase()) {
 				case "get":
 					this.router.get(route.path, route.handler);
@@ -370,6 +375,31 @@ class _Server implements Server {
 					break;
 			}
 		});
+	}
+
+	private logRoutes(routes: Route[], files: Map<string, string>): void {
+		this.logger.info("===== ROUTES START =====");
+
+		if (files.size > 0) {
+			this.logger.info("# Files:");
+			for (const path of files.keys()) {
+				this.logger.info("    " + path);
+			}
+		}
+
+		const commands = routes.filter(route => route.type === "command");
+		if (commands.length > 0) {
+			this.logger.info("# Commands:");
+			commands.forEach(route => this.logger.info(`    ${ route.method } : ${ route.path }`));
+		}
+
+		const modules = routes.filter(route => route.type === "root-module");
+		if (modules.length > 0) {
+			this.logger.info("# Root modules:");
+			modules.forEach(route => this.logger.info(`    ${ route.path }`));
+		}
+
+		this.logger.info("====== ROUTES END ======");
 	}
 }
 

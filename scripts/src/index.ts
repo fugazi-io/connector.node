@@ -9,6 +9,8 @@ import * as winston from "winston";
 import * as server from "./server";
 export { server };
 
+//import * as common from "./common";
+export * from "./common";
 import * as components from "./components";
 import { ConnectorBuilder, Connector } from "./connector";
 export {
