@@ -226,6 +226,10 @@ export class ServerBuilder {
 			handler: commandHandlerWrapper.bind(null, command.handler)
 		}));
 
+		if (this._cors == null) {
+			this.cors(true);
+		}
+
 		return new _Server(
 			this.getHost(),
 			this.getPort(),
