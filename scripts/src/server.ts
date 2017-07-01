@@ -452,6 +452,15 @@ async function handleResponse(ctx: Router.IRouterContext, response: Response | P
 		});
 	}
 
+	ctx.type = "application/json";
+	if (response.status === ResponseStatus.Success) {
+		ctx.body = getSuccessResponse(response);
+	} else {
+		ctx.body = getFailureResponse(response);
+	}
+}
+
+function getSuccessResponse(response: Response) {
 	let value: any;
 	if (response.data instanceof Map) {
 		value = extendMap(response.data).toObject();
@@ -459,9 +468,16 @@ async function handleResponse(ctx: Router.IRouterContext, response: Response | P
 		value = response.data;
 	}
 
-	ctx.type = "application/json";
-	ctx.body = {
-		status: typeof response.status === "number" ? response.status : ResponseStatus.Success,
+
+	return {
+		status: ResponseStatus.Success,
 		value
+	}
+}
+
+function getFailureResponse(response: Response) {
+	return {
+		status: ResponseStatus.Failure,
+		error: response.data
 	}
 }

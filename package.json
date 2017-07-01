@@ -1,6 +1,6 @@
 {
   "name": "@fugazi/connector",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "basic functionality needed for creating a new fugazi connector using nodejs",
   "main": "./scripts/bin/index.js",
   "types": "./scripts/bin/index.d.ts",
