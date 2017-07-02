@@ -102,7 +102,7 @@ export class RemoteCommandBuilder extends ComponentBuilder<ModuleBuilder, descri
 	private _endpoint: string | undefined;
 	private _syntax: ExtendedArray<string>;
 	private _handler: server.CommandHandler;
-	private _returns: string;
+	private _returns: descriptors.TypeDefinition;
 	private _method: server.HttpMethod | undefined;
 
 	constructor(parent: ModuleBuilder, serverBuilder: server.ServerBuilder) {
@@ -112,6 +112,10 @@ export class RemoteCommandBuilder extends ComponentBuilder<ModuleBuilder, descri
 
 	descriptor(descriptor: Partial<descriptors.RemoteCommand>): this {
 		super.descriptor(descriptor as descriptors.RemoteCommand);
+
+		if (descriptor.returns) {
+			this._returns = descriptor.returns;
+		}
 
 		if (typeof descriptor.syntax === "string") {
 			this._syntax.push(descriptor.syntax);
@@ -147,7 +151,7 @@ export class RemoteCommandBuilder extends ComponentBuilder<ModuleBuilder, descri
 		return this;
 	}
 
-	returns(type: string): this {
+	returns(type: descriptors.TypeDefinition): this {
 		this._returns = type;
 		return this;
 	}
@@ -199,6 +203,7 @@ type FileHandler = {
 
 export abstract class ModuleBuilder<P = any, C extends descriptors.Module = descriptors.Module> extends ComponentBuilder<P, C>{
 	private _files: ExtendedArray<FileHandler>;
+	private _lookup: ExtendedMap<string, string>;
 	private _types: ExtendedMap<string, TypeBuilder>;
 	private _modules: ExtendedMap<string, InnerModuleBuilder>;
 	private _commands: ExtendedMap<string, RemoteCommandBuilder>;
@@ -207,6 +212,7 @@ export abstract class ModuleBuilder<P = any, C extends descriptors.Module = desc
 		super(parent, serverBuilder);
 
 		this._files = new ExtendedArray<FileHandler>();
+		this._lookup = new ExtendedMap<string, string>();
 		this._types = new ExtendedMap<string, TypeBuilder>();
 		this._modules = new ExtendedMap<string, InnerModuleBuilder>();
 		this._commands = new ExtendedMap<string, RemoteCommandBuilder>();
@@ -286,6 +292,11 @@ export abstract class ModuleBuilder<P = any, C extends descriptors.Module = desc
 	types(endpoint: string, file: string): this;
 	types(first: string, second?: string): this {
 		return this.file("type", first, second!);
+	}
+
+	lookup(handlerParameterName: string, variableName: string): this {
+		this._lookup.set(handlerParameterName, variableName);
+		return this;
 	}
 
 	command(descriptor: descriptors.NamedRemoteCommand, handler?: server.CommandHandler): this;
@@ -382,6 +393,10 @@ export abstract class ModuleBuilder<P = any, C extends descriptors.Module = desc
 		});
 
 		const descriptor = super.build();
+
+		if (!this._lookup.empty()) {
+			descriptor.lookup = this._lookup.toObject();
+		}
 
 		const typeFiles = this._files.filter(file => file.type === "type");
 		if (!typeFiles.empty()) {

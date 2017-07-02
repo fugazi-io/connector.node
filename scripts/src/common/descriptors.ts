@@ -4,7 +4,7 @@
  * Created by nitzan on 17/02/2017.
  */
 
-import * as polyfill from "./polyfill"; // needed
+import * as polyfill from "./polyfill"; // needed for compilation
 import { map as mapObject } from "./object";
 
 export type Named<T extends Component> = T & { name: string };
@@ -55,6 +55,7 @@ export interface Module<R = RelativeRemoteDescriptor> extends Component {
 	converters?: string[];
 	constraints?: string[];
 	types?: ComponentCollection<Type>;
+	lookup?: { [name: string]: string };
 	modules?: ComponentCollection<Module>;
 	commands?: ComponentCollection<Command>;
 }
