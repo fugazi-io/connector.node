@@ -24,15 +24,15 @@ import { ConnectorBuilder } from "./connector";
 
 export type HttpMethod = "get" | "GET" | "put" | "PUT" | "post" | "POST" | "delete" | "DELETE";
 
-export type RequestDataGetter = {
-	(name: string): string;
+export type RequestDataGetter<T> = {
+	(name: string): T;
 	has(name: string): boolean;
 }
 
-export type RequestData = RequestDataGetter & {
-	body: RequestDataGetter;
-	path: RequestDataGetter;
-	search: RequestDataGetter;
+export type RequestData = RequestDataGetter<string | any> & {
+	body: RequestDataGetter<any>;
+	path: RequestDataGetter<string>;
+	search: RequestDataGetter<string>;
 }
 export type Request = {
 	path: string;
