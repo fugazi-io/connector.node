@@ -17,14 +17,22 @@ Then simply:
 npm install --save @fugazi/connector
 ```
 
-## Running
+## Building & Running
 The package comes with a (very) simple example to illustrate what the connector does.  
 The example includes two commands which expects a value (`any`) and return this value, one version is a local command and 
   the other is a remote.
 
-To run the example:
+To run the example, first build it:
 ```bash
-/CONNECTOR/PATH > node ./scripts/bin/index.js
+npm run compile
+```
+
+And then start it:
+
+```bash
+npm run start
+// or
+node ./scripts/bin/index.js
 ```
 
 You should now see that the connector is up and running and it should print the url for the descriptor, something like:
