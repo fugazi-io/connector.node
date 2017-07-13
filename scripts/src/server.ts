@@ -453,10 +453,10 @@ async function handleResponse(ctx: Router.IRouterContext, response: Response | P
 	}
 
 	ctx.type = "application/json";
-	if (response.status === ResponseStatus.Success) {
-		ctx.body = getSuccessResponse(response);
-	} else {
+	if (response.status === ResponseStatus.Failure) {
 		ctx.body = getFailureResponse(response);
+	} else {
+		ctx.body = getSuccessResponse(response);
 	}
 }
 
