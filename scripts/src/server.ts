@@ -125,7 +125,7 @@ export type CommandEndpoint = {
 	handler: CommandHandler;
 }
 
-const pathFor = path.join.bind(path, __dirname, "../../../");
+const pathFor = path.join.bind(path, __dirname, "../../");
 
 type Route = {
 	type: "command" | "root-module";
@@ -256,7 +256,7 @@ export class ServerBuilder {
 		const routes = new Map<string, string>();
 
 		if (this._proxy) {
-			this._files.set(ServerBuilder.PROXY_PATH, "../../../public/proxyframe.html");
+			this._files.set(ServerBuilder.PROXY_PATH, "public/proxyframe.html");
 		}
 
 		this._files.forEach((file, path) => {
