@@ -26,8 +26,6 @@ const pathFor = path.join.bind(path, __dirname, "../../");
 
 function createEchoModule(connectorBuilder: ConnectorBuilder): void {
 	connectorBuilder
-		.server()
-			.parent()
 		.module("samples.echo")
 			.descriptor({
 				title: "Echo example",

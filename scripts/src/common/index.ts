@@ -6,8 +6,9 @@ import * as map  from "./map";
 import * as array  from "./array";
 import * as utils  from "./utils";
 import * as descriptors  from "./descriptors";
+import * as clientTypes  from "./clientTypes";
 
-export { map, array, utils, descriptors };
+export { map, array, utils, descriptors, clientTypes };
 
 export function equals(obj1: any, obj2: any): boolean {
 	if (Number.isNaN(obj1) && Number.isNaN(obj2)) {

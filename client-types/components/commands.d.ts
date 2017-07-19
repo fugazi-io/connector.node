@@ -1,3 +1,4 @@
+/// <reference path="../../lib/analytics.d.ts" />
 /// <reference path="../app/application.d.ts" />
 /// <reference path="components.d.ts" />
 /// <reference path="registry.d.ts" />
@@ -50,10 +51,11 @@ declare namespace fugazi.components.commands {
         executeLater(context: app.modules.ModuleContext): Executer;
         executeNow(context: app.modules.ModuleContext, params: ExecutionParameters): ExecutionResult;
         protected abstract invokeHandler(context: app.modules.ModuleContext, params: ExecutionParameters): Promise<handler.Result>;
-        protected handleHandlerResult(executionResult: ExecutionResult, result: handler.Result): void;
+        protected handleHandlerResult(cbType: "then" | "catch", executionResult: ExecutionResult, result: handler.Result): void;
         protected validateResultValue(result: any): boolean;
         private knownConvertResult(value);
         private unknownConvertResult(value);
+        protected defaultManual(): string;
     }
     class LocalCommand extends Command {
         protected parametersForm: handler.PassedParametersForm;
@@ -62,16 +64,28 @@ declare namespace fugazi.components.commands {
         protected invokeHandler(context: app.modules.ModuleContext, params: ExecutionParameters): Promise<handler.Result | any>;
     }
     namespace handler {
-        function isHandlerResult(value: any): value is Result;
+        function isHandlerResult(obj: any): obj is Result;
+        function isSuccessHandlerResult(obj: any): obj is SuccessResult;
+        function isFailureHandlerResult(obj: any): obj is FailResult;
+        function isOAuth2HandlerResult(obj: any): obj is OAuth2Result;
+        function isPromptHandlerResult(obj: any): obj is PromptResult;
         enum ResultStatus {
             Success = 0,
             Failure = 1,
-            Prompt = 2,
+            OAuth2 = 2,
+            Prompt = 3,
         }
         interface Result {
             status: ResultStatus;
+        }
+        interface SuccessResult extends Result {
             value?: any;
-            error?: string;
+        }
+        interface FailResult extends Result {
+            error: string;
+        }
+        interface OAuth2Result extends Result {
+            authorizationUri: string;
         }
         interface PromptData {
             type: "password";
