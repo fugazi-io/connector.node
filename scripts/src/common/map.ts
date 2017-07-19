@@ -95,7 +95,7 @@ export function filter<K, V>(map: Map<K, V>, callback: (value: V, key: K, map: M
 export type Extended<K, V> = Map<K, V> & {
 	empty(): boolean;
 	keysArray(): K[];
-	valuesArray<V>(): V[];
+	valuesArray(): V[];
 	toArray<T>(mapper: (value: V, key: K, map: Map<K, V>) => T, thisArg?: any): T[];
 	toObject(): objects.PlainObject<V>;
 	map<V2>(mapper: (value: V, key: K, map: Map<K, V>) => V2, thisArg?: any): Map<K, V2>;

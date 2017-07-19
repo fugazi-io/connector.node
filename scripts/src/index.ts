@@ -24,7 +24,8 @@ const pathFor = path.join.bind(path, __dirname, "../../");
 function createEchoModule(connectorBuilder: ConnectorBuilder): void {
 	connectorBuilder
 		.server()
-			.cors(true)
+			//.cors(true)
+			.proxy(true)
 			.parent()
 		.module("samples.echo")
 			.descriptor({

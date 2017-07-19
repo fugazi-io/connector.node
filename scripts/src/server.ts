@@ -125,7 +125,7 @@ export type CommandEndpoint = {
 	handler: CommandHandler;
 }
 
-const pathFor = path.join.bind(path, __dirname, "../../../");
+const pathFor = path.join.bind(path, __dirname, "../../");
 
 type Route = {
 	type: "command" | "root-module";
@@ -213,12 +213,27 @@ export class ServerBuilder {
 	build(): Server {
 		const routes = [] as Route[];
 
-		this._modules.forEach((descriptor, name) => routes.push({
-			type: "root-module",
-			path: `/${ name }.json`,
-			method: "get",
-			handler: serveModule.bind(this, descriptor)
-		}));
+		this._modules.forEach((descriptor, name) => {
+			let route: Route;
+
+			if (this._proxy) {
+				route = {
+					type: "root-module",
+					path: `/${ name }.js`,
+					method: "get",
+					handler: serveJsModule.bind(this, descriptor)
+				}
+			} else {
+				route = {
+					type: "root-module",
+					path: `/${ name }.json`,
+					method: "get",
+					handler: serveJSONModule.bind(this, descriptor)
+				}
+			}
+			routes.push(route);
+		});
+
 		this._commands.forEach(command => routes.push({
 			type: "command",
 			path: command.path,
@@ -256,7 +271,7 @@ export class ServerBuilder {
 		const routes = new Map<string, string>();
 
 		if (this._proxy) {
-			this._files.set(ServerBuilder.PROXY_PATH, "../../../public/proxyframe.html");
+			this._files.set(ServerBuilder.PROXY_PATH, "public/proxyframe.html");
 		}
 
 		this._files.forEach((file, path) => {
@@ -407,9 +422,14 @@ class _Server implements Server {
 	}
 }
 
-function serveModule(module: descriptors.NamedModule, ctx: Koa.Context) {
+function serveJSONModule(module: descriptors.NamedModule, ctx: Koa.Context) {
 	ctx.type = "application/json";
 	ctx.body = module;
+}
+
+function serveJsModule(module: descriptors.NamedModule, ctx: Koa.Context) {
+	ctx.type = "application/javascript";
+	ctx.body = "(function() { fugazi.components.modules.descriptor.loaded(" + JSON.stringify(module) + "); })()";
 }
 
 async function commandHandlerWrapper(handler: CommandHandler, ctx: Router.IRouterContext, next: () => Promise<any>) {
@@ -467,8 +487,6 @@ function getSuccessResponse(response: Response) {
 	} else {
 		value = response.data;
 	}
-
-
 	return {
 		status: ResponseStatus.Success,
 		value
