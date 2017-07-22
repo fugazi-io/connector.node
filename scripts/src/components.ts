@@ -185,7 +185,7 @@ export class RemoteCommandBuilder extends ComponentBuilder<ModuleBuilder, descri
 }
 
 function normalizeEndpointForServer(endpoint: string): string {
-	const re = /\{\s*([a-zA-Z0-9]+)\s*\}/g;
+	const re = /\{\s*([a-zA-Z0-9]+)\s*\}/;
 	let match: RegExpExecArray | null;
 	while ((match = re.exec(endpoint)) !== null) {
 		endpoint = endpoint.replace(match[0], ":" + match[1]);
