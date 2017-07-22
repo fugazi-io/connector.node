@@ -125,7 +125,7 @@ export type CommandEndpoint = {
 	handler: CommandHandler;
 }
 
-const pathFor = path.join.bind(path, __dirname, "../../../");
+const pathFor = path.join.bind(path, __dirname, "../../");
 
 type Route = {
 	type: "command" | "root-module";
@@ -256,7 +256,7 @@ export class ServerBuilder {
 		const routes = new Map<string, string>();
 
 		if (this._proxy) {
-			this._files.set(ServerBuilder.PROXY_PATH, "../../../public/proxyframe.html");
+			this._files.set(ServerBuilder.PROXY_PATH, "public/proxyframe.html");
 		}
 
 		this._files.forEach((file, path) => {
@@ -453,10 +453,10 @@ async function handleResponse(ctx: Router.IRouterContext, response: Response | P
 	}
 
 	ctx.type = "application/json";
-	if (response.status === ResponseStatus.Success) {
-		ctx.body = getSuccessResponse(response);
-	} else {
+	if (response.status === ResponseStatus.Failure) {
 		ctx.body = getFailureResponse(response);
+	} else {
+		ctx.body = getSuccessResponse(response);
 	}
 }
 
