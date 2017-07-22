@@ -26,6 +26,10 @@ export class ConnectorBuilder {
 		return this._server;
 	}
 
+	logger() {
+		return this._logger;
+	}
+
 	module(obj: string | descriptors.Named<Partial<descriptors.Module>>): RootModuleBuilder {
 		const builder = new RootModuleBuilder(this, this._server);
 

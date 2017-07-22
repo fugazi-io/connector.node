@@ -5,13 +5,14 @@
 import * as winston from "winston";
 import { ConnectorBuilder } from "./connector";
 
-export type Level = "debug" | "info" | "warning";
+export type LoggingLevel = "debug" | "info" | "warning";
+
 export class LoggingBuilder {
 	public static readonly DEFAULT_LEVEL = "info";
 
 	private _filePath: string;
-	private _fileLevel: Level;
-	private _consoleLevel: Level;
+	private _fileLevel: LoggingLevel;
+	private _consoleLevel: LoggingLevel;
 	private _parent: ConnectorBuilder;
 	private _options: winston.LoggerOptions;
 
@@ -23,7 +24,7 @@ export class LoggingBuilder {
 		return this._parent;
 	}
 
-	consoleLevel(level: Level): this {
+	consoleLevel(level: LoggingLevel): this {
 		this._consoleLevel = level;
 		return this;
 	}
@@ -33,7 +34,7 @@ export class LoggingBuilder {
 		return this;
 	}
 
-	fileLevel(level: Level): this {
+	fileLevel(level: LoggingLevel): this {
 		this._fileLevel = level;
 		return this;
 	}

@@ -9,6 +9,9 @@ import * as winston from "winston";
 import * as server from "./server";
 export { server };
 
+import * as logger from "./logger";
+export { logger };
+
 //import * as common from "./common";
 export * from "./common";
 import * as components from "./components";
