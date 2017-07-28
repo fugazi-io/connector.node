@@ -34,7 +34,7 @@
     "koa-router": "^7.0.1",
     "koa-send": "^3.3.0",
     "server-destroy": "^1.0.1",
-    "typescript": "^2.3.2",
+    "typescript": "^2.4.2",
     "winston": "^2.3.1"
   },
   "devDependencies": {
