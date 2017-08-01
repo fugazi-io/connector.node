@@ -102,6 +102,9 @@ class ServerBuilder {
         this._host = host;
         return this;
     }
+    session(config = {}) {
+        this._session = config;
+    }
     cors(cors) {
         if (!cors) {
             this._cors = false;
@@ -170,7 +173,7 @@ class ServerBuilder {
         if (this._cors == null) {
             this.cors(true);
         }
-        return new _Server(this.getHost(), this.getPort(), this._cors, this._logger, this.prepareFiles(), this._folders, routes);
+        return new _Server(this.getHost(), this.getPort(), this._cors, this._logger, this.prepareFiles(), this._folders, this._session, routes);
     }
     getOrigin() {
         return `http://${this.getHost()}:${this.getPort()}`;
@@ -209,7 +212,7 @@ ServerBuilder.DEFAULT_PORT = 3333;
 ServerBuilder.PROXY_PATH = "/proxyframe";
 exports.ServerBuilder = ServerBuilder;
 class _Server {
-    constructor(host, port, cors, logger, files, folders, routes) {
+    constructor(host, port, cors, logger, files, folders, sessionConfig, routes) {
         this.host = host;
         this.port = port;
         this.logger = logger;
@@ -224,7 +227,9 @@ class _Server {
         if (cors) {
             this.koa.use(Cors(cors));
         }
-        this.koa.use(session_1.middleware(this.koa));
+        if (sessionConfig !== undefined) {
+            this.koa.use(session_1.middleware(this.koa, sessionConfig));
+        }
         this.koa.use(statics_1.middleware(files));
         this.koa.use(bodyparser());
         this.router = new Router();

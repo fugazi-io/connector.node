@@ -4,7 +4,7 @@ import Cors = require("kcors");
 import * as winston from "winston";
 import * as descriptors from "./common/descriptors";
 import { ExtendedMap } from "./common/map";
-import { Session } from "./middleware/session";
+import { Config as SessionConfig, Session } from "./middleware/session";
 import { ConnectorBuilder } from "./connector";
 export declare type HttpMethod = "get" | "GET" | "put" | "PUT" | "post" | "POST" | "delete" | "DELETE";
 export declare type RequestDataGetter<T> = {
@@ -49,6 +49,7 @@ export declare class ServerBuilder {
     private _port;
     private _host;
     private _proxy;
+    private _session;
     private _cors;
     private _files;
     private _folders;
@@ -58,6 +59,7 @@ export declare class ServerBuilder {
     logger(logger: winston.LoggerInstance): this;
     port(port: number): this;
     host(host: string): this;
+    session(config?: Partial<SessionConfig>): void;
     cors(cors: boolean | Cors.Options): this;
     proxy(proxy: boolean): this;
     folder(folderPath: string): this;
