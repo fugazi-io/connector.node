@@ -342,7 +342,6 @@ class _Server implements Server {
 		this.logger = logger;
 
 		this.koa = new Koa();
-		this.koa.keys = ['replace me with something not published publicly'];
 
 		if (folders.length) {
 			folders.forEach((folder)=>{
@@ -357,6 +356,9 @@ class _Server implements Server {
 		}
 
 		if(sessionConfig !== undefined) {
+			if(sessionConfig.keygrip) {
+				this.koa.keys = sessionConfig.keygrip;
+			}
 			this.koa.use(session(this.koa, sessionConfig));
 		}
 

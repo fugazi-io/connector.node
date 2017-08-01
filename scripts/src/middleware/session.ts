@@ -1,7 +1,8 @@
 import * as session from "koa-session";
 import * as Koa from "koa";
+import Keygrip = require("keygrip");
 
-const DEFAULT_CONFIG: session.sessionConfig = {
+const DEFAULT_CONFIG: Config = {
 	// /**
 	//  * Hook: valid session value before use it
 	//  */
@@ -29,5 +30,5 @@ export function middleware(app: Koa, config: Partial<Config>) {
 	return session(Object.assign({}, config, DEFAULT_CONFIG), app);
 }
 
-export type Config = session.sessionConfig;
+export type Config = session.sessionConfig & {keygrip:Keygrip | string[]};
 export type Session = session.sessionProps;
