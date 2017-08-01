@@ -4,7 +4,7 @@
  * Created by nitzan on 17/02/2017.
  */
 
-import * as polyfill from "./polyfill"; // needed for compilation
+import "./polyfill"; // needed for compilation
 import { map as mapObject } from "./object";
 
 export type Named<T extends Component> = T & { name: string };
