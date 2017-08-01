@@ -17,7 +17,7 @@ export declare type RequestData = RequestDataGetter<string | any> & {
     search: RequestDataGetter<string>;
 };
 export declare type Request = {
-    session: Session;
+    session: Session | undefined;
     path: string;
     data: RequestData;
     headers: ExtendedMap<string, string>;
