@@ -217,7 +217,6 @@ class _Server {
         this.port = port;
         this.logger = logger;
         this.koa = new Koa();
-        this.koa.keys = ['replace me with something not published publicly'];
         if (folders.length) {
             folders.forEach((folder) => {
                 this.koa.use(serve(folder));
@@ -228,6 +227,9 @@ class _Server {
             this.koa.use(Cors(cors));
         }
         if (sessionConfig !== undefined) {
+            if (sessionConfig.keygrip) {
+                this.koa.keys = sessionConfig.keygrip;
+            }
             this.koa.use(session_1.middleware(this.koa, sessionConfig));
         }
         this.koa.use(statics_1.middleware(files));
