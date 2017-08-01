@@ -1,7 +1,7 @@
 import * as session from "koa-session";
 import * as Koa from "koa";
 
-const CONFIG: session.sessionConfig = {
+const DEFAULT_CONFIG: session.sessionConfig = {
 	// /**
 	//  * Hook: valid session value before use it
 	//  */
@@ -25,8 +25,9 @@ const CONFIG: session.sessionConfig = {
 	rolling: true, /** (boolean) Force a session identifier cookie to be set on every response. The expiration is reset to the original maxAge, resetting the expiration countdown. default is false **/
 } as any;
 
-export function middleware(app: Koa) {
-	return session(CONFIG, app);
+export function middleware(app: Koa, config: Partial<Config>) {
+	return session(Object.assign({}, config, DEFAULT_CONFIG), app);
 }
 
+export type Config = session.sessionConfig;
 export type Session = session.sessionProps;
