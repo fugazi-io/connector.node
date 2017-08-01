@@ -19,7 +19,7 @@ import { ExtendedArray } from "./common/array";
 
 import { middleware as statics } from "./middleware/statics";
 import { middleware as logging } from "./middleware/logging";
-import { middleware as session, Session } from "./middleware/session";
+import {Config as SessionConfig, middleware as session, Session} from "./middleware/session";
 import serve = require('koa-static');
 
 import { ConnectorBuilder } from "./connector";
@@ -149,6 +149,7 @@ export class ServerBuilder {
 	private _port: number;
 	private _host: string;
 	private _proxy: boolean;
+	private _session: Partial<SessionConfig>|undefined;
 	private _cors: false | Cors.Options;
 	private _files: ExtendedMap<string, string>;
 	private _folders: Array<string>;
@@ -176,6 +177,10 @@ export class ServerBuilder {
 	host(host: string): this {
 		this._host = host;
 		return this;
+	}
+
+	session(config:Partial<SessionConfig> = {}){
+		this._session = config;
 	}
 
 	cors(cors: boolean | Cors.Options): this {
@@ -263,6 +268,7 @@ export class ServerBuilder {
 			this._logger,
 			this.prepareFiles(),
 			this._folders,
+			this._session,
 			routes
 		);
 	}
@@ -329,6 +335,7 @@ class _Server implements Server {
 				logger: winston.LoggerInstance,
 				files: Map<string, string>,
 				folders:Array<string>,
+				sessionConfig: Partial<SessionConfig>|undefined,
 				routes: Route[]) {
 		this.host = host;
 		this.port = port;
@@ -349,7 +356,9 @@ class _Server implements Server {
 			this.koa.use(Cors(cors));
 		}
 
-		this.koa.use(session(this.koa));
+		if(sessionConfig !== undefined) {
+			this.koa.use(session(this.koa, sessionConfig));
+		}
 
 		this.koa.use(statics(files));
 
