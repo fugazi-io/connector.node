@@ -30,6 +30,7 @@
     "@types/koa-static": "^3.0.0",
     "@types/node": "^8.0.17",
     "@types/winston": "^2.2.0",
+    "encodeurl": "^1.0.1",
     "kcors": "^2.2.1",
     "koa": "^2.0.0",
     "koa-bodyparser": "^3.2.0",

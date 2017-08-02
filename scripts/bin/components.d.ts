@@ -2,6 +2,7 @@ import { ExtendedArray } from "./common/array";
 import * as descriptors from "./common/descriptors";
 import { ConnectorBuilder } from "./connector";
 import * as server from "./server";
+import "./encodeurl";
 export declare abstract class ComponentBuilder<P, C extends descriptors.Component> {
     protected _parent: P;
     protected _name: string | undefined;

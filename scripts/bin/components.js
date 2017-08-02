@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const map_1 = require("./common/map");
 const array_1 = require("./common/array");
 const descriptors = require("./common/descriptors");
+require("./encodeurl");
+const encodeUrl = require("encodeurl");
 class ComponentBuilder {
     constructor(parent, serverBuilder) {
         this._parent = parent;
@@ -141,7 +143,7 @@ function normalizeEndpointForServer(endpoint) {
     while ((match = re.exec(endpoint)) !== null) {
         endpoint = endpoint.replace(match[0], ":" + match[1]);
     }
-    return endpoint;
+    return encodeUrl(endpoint);
 }
 class ModuleBuilder extends ComponentBuilder {
     constructor(parent, serverBuilder) {

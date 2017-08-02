@@ -8,6 +8,8 @@ import * as descriptors from "./common/descriptors";
 
 import { ConnectorBuilder } from "./connector";
 import * as server from "./server";
+import "./encodeurl";
+import encodeUrl = require('encodeurl')
 
 export abstract class ComponentBuilder<P, C extends descriptors.Component> {
 	protected _parent: P;
@@ -190,8 +192,7 @@ function normalizeEndpointForServer(endpoint: string): string {
 	while ((match = re.exec(endpoint)) !== null) {
 		endpoint = endpoint.replace(match[0], ":" + match[1]);
 	}
-
-	return endpoint;
+	return encodeUrl(endpoint);
 }
 
 type ComponentType = "type" | "module" | "command" | "converter" | "constraint";
