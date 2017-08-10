@@ -19,8 +19,8 @@ import { ExtendedArray } from "./common/array";
 
 import { middleware as statics } from "./middleware/statics";
 import { middleware as logging } from "./middleware/logging";
-import {Config as SessionConfig, middleware as session, Session} from "./middleware/session";
-import serve = require('koa-static');
+import { Config as SessionConfig, middleware as session, Session } from "./middleware/session";
+import serve = require("koa-static");
 
 import { ConnectorBuilder } from "./connector";
 
@@ -37,7 +37,7 @@ export type RequestData = RequestDataGetter<string | any> & {
 	search: RequestDataGetter<string>;
 }
 export type Request = {
-	session: Session|undefined;
+	session: Session | undefined;
 	path: string;
 	data: RequestData;
 	headers: ExtendedMap<string, string>;
@@ -149,7 +149,7 @@ export class ServerBuilder {
 	private _port: number;
 	private _host: string;
 	private _proxy: boolean;
-	private _session: Partial<SessionConfig>|undefined;
+	private _session: Partial<SessionConfig> | undefined;
 	private _cors: false | Cors.Options;
 	private _files: ExtendedMap<string, string>;
 	private _folders: Array<string>;
@@ -179,7 +179,7 @@ export class ServerBuilder {
 		return this;
 	}
 
-	session(config:Partial<SessionConfig> = {}){
+	session(config: Partial<SessionConfig> = {}){
 		this._session = config;
 	}
 
@@ -344,7 +344,7 @@ class _Server implements Server {
 		this.koa = new Koa();
 
 		if (folders.length) {
-			folders.forEach((folder)=>{
+			folders.forEach(folder=>{
 				this.koa.use(serve(folder));
 			})
 		}
@@ -355,8 +355,8 @@ class _Server implements Server {
 			this.koa.use(Cors(cors));
 		}
 
-		if(sessionConfig !== undefined) {
-			if(sessionConfig.keygrip) {
+		if (sessionConfig !== undefined) {
+			if (sessionConfig.keygrip) {
 				this.koa.keys = sessionConfig.keygrip;
 			}
 			this.koa.use(session(this.koa, sessionConfig));
