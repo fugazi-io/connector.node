@@ -26,6 +26,9 @@
     "@types/koa-bodyparser": "^3.0.23",
     "@types/koa-router": "^7.0.21",
     "@types/koa-send": "^3.3.0",
+    "@types/koa-session": "^3.0.1",
+    "@types/koa-static": "^3.0.0",
+    "@types/node": "^8.0.17",
     "@types/winston": "^2.2.0",
     "kcors": "^2.2.1",
     "koa": "^2.0.0",
@@ -33,6 +36,8 @@
     "koa-convert": "^1.2.0",
     "koa-router": "^7.0.1",
     "koa-send": "^3.3.0",
+    "koa-session": "^5.4.0",
+    "koa-static": "^4.0.1",
     "server-destroy": "^1.0.1",
     "typescript": "^2.4.2",
     "winston": "^2.3.1"

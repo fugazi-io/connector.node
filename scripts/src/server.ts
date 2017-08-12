@@ -19,6 +19,8 @@ import { ExtendedArray } from "./common/array";
 
 import { middleware as statics } from "./middleware/statics";
 import { middleware as logging } from "./middleware/logging";
+import { Config as SessionConfig, middleware as session, Session } from "./middleware/session";
+import serve = require("koa-static");
 
 import { ConnectorBuilder } from "./connector";
 
@@ -35,6 +37,7 @@ export type RequestData = RequestDataGetter<string | any> & {
 	search: RequestDataGetter<string>;
 }
 export type Request = {
+	session: Session | undefined;
 	path: string;
 	data: RequestData;
 	headers: ExtendedMap<string, string>;
@@ -63,7 +66,7 @@ function createRequestData(body: ExtendedMap<string, string>, path: ExtendedMap<
 
 	data.has = function(name: string): boolean {
 		return body.has(name) || path.has(name) || search.has(name);
-	}
+	};
 
 	data.body = body.get.bind(body);
 	data.body.has = body.has.bind(body);
@@ -105,6 +108,7 @@ function parse(ctx: Router.IRouterContext): Request {
 	}
 
 	return {
+		session: ctx.session,
 		headers,
 		path: ctx.path,
 		data: createRequestData(body, path, search)
@@ -145,15 +149,18 @@ export class ServerBuilder {
 	private _port: number;
 	private _host: string;
 	private _proxy: boolean;
+	private _session: Partial<SessionConfig> | undefined;
 	private _cors: false | Cors.Options;
 	private _files: ExtendedMap<string, string>;
+	private _folders: Array<string>;
 	private _commands: ExtendedArray<CommandEndpoint>;
 	private _modules: ExtendedMap<string, descriptors.NamedModule>;
 
 	constructor(parent: ConnectorBuilder) {
 		this._parent = parent;
-		this._files = new ExtendedMap<string, string>(),
-		this._commands = new ExtendedArray<CommandEndpoint>(),
+		this._files = new ExtendedMap<string, string>();
+		this._folders = [];
+		this._commands = new ExtendedArray<CommandEndpoint>();
 		this._modules = new ExtendedMap<string, descriptors.NamedModule>();
 	}
 
@@ -172,6 +179,10 @@ export class ServerBuilder {
 		return this;
 	}
 
+	session(config: Partial<SessionConfig> = {}){
+		this._session = config;
+	}
+
 	cors(cors: boolean | Cors.Options): this {
 		if (!cors) {
 			this._cors = false;
@@ -188,6 +199,11 @@ export class ServerBuilder {
 
 	proxy(proxy: boolean): this {
 		this._proxy = proxy;
+		return this;
+	}
+
+	folder(folderPath: string): this {
+		this._folders.push(folderPath);
 		return this;
 	}
 
@@ -251,6 +267,8 @@ export class ServerBuilder {
 			this._cors,
 			this._logger,
 			this.prepareFiles(),
+			this._folders,
+			this._session,
 			routes
 		);
 	}
@@ -316,16 +334,32 @@ class _Server implements Server {
 				cors: false | Cors.Options,
 				logger: winston.LoggerInstance,
 				files: Map<string, string>,
+				folders:Array<string>,
+				sessionConfig: Partial<SessionConfig>|undefined,
 				routes: Route[]) {
 		this.host = host;
 		this.port = port;
 		this.logger = logger;
 
 		this.koa = new Koa();
+
+		if (folders.length) {
+			folders.forEach(folder=>{
+				this.koa.use(serve(folder));
+			})
+		}
+
 		this.setupLogging();
 
 		if (cors) {
 			this.koa.use(Cors(cors));
+		}
+
+		if (sessionConfig !== undefined) {
+			if (sessionConfig.keygrip) {
+				this.koa.keys = sessionConfig.keygrip;
+			}
+			this.koa.use(session(this.koa, sessionConfig));
 		}
 
 		this.koa.use(statics(files));
