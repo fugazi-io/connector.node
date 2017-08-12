@@ -317,10 +317,13 @@ export abstract class ModuleBuilder<P = any, C extends descriptors.Module = desc
 			descriptor = first;
 		}
 
-
 		let builder = new RemoteCommandBuilder(this, this._server);
 		if (descriptor) {
 			builder.descriptor(descriptor);
+		}
+
+		if (handler) {
+			builder.handler(handler);
 		}
 
 		this._commands.set(name, builder);

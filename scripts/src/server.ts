@@ -334,8 +334,8 @@ class _Server implements Server {
 				cors: false | Cors.Options,
 				logger: winston.LoggerInstance,
 				files: Map<string, string>,
-				folders:Array<string>,
-				sessionConfig: Partial<SessionConfig>|undefined,
+				folders: string[],
+				sessionConfig: Partial<SessionConfig> | undefined,
 				routes: Route[]) {
 		this.host = host;
 		this.port = port;
