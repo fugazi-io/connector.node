@@ -64,6 +64,7 @@ export type NamedModule = Named<Module>;
 export interface RootRemoteDescriptor {
 	base?: string;
 	proxy?: string;
+	auth?: "basic"; // currently only basic auth is supported
 	origin: string;
 }
 export type RootModule = Named<Module<RootRemoteDescriptor>>;
