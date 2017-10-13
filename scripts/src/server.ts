@@ -231,6 +231,7 @@ export class ServerBuilder {
 
 		this._modules.forEach((descriptor, name) => {
 			let route: Route;
+
 			if (this._proxy) {
 				route = {
 					type: "root-module",
