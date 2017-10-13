@@ -202,7 +202,7 @@ type FileHandler = {
 	type: ComponentType;
 };
 
-export abstract class ModuleBuilder<P = any, C extends descriptors.Module = descriptors.Module> extends ComponentBuilder<P, C>{
+export abstract class ModuleBuilder<P = any, C extends descriptors.Module = descriptors.Module> extends ComponentBuilder<P, C> {
 	private _files: ExtendedArray<FileHandler>;
 	private _lookup: ExtendedMap<string, string>;
 	private _types: ExtendedMap<string, TypeBuilder>;
@@ -302,7 +302,7 @@ export abstract class ModuleBuilder<P = any, C extends descriptors.Module = desc
 
 	command(descriptor: descriptors.NamedRemoteCommand, handler?: server.CommandHandler): this;
 	command(name: string, descriptor?: Partial<descriptors.RemoteCommand>, handler?: server.CommandHandler): RemoteCommandBuilder;
-	command(first: string | descriptors.NamedRemoteCommand, second?: descriptors.RemoteCommand | server.CommandHandler, third?: server.CommandHandler): this | RemoteCommandBuilder {
+	command(first: string | descriptors.NamedRemoteCommand, second?: Partial<descriptors.RemoteCommand> | server.CommandHandler, third?: server.CommandHandler): this | RemoteCommandBuilder {
 		let name: string;
 		let handler: server.CommandHandler | undefined;
 		let descriptor: Partial<descriptors.RemoteCommand> | undefined;
@@ -310,7 +310,7 @@ export abstract class ModuleBuilder<P = any, C extends descriptors.Module = desc
 		if (typeof first === "string") {
 			name = first;
 			handler = third;
-			descriptor = second || {};
+			descriptor = second as Partial<descriptors.RemoteCommand> || {};
 			descriptor.name = name;
 		} else {
 			name = first.name;
@@ -318,10 +318,13 @@ export abstract class ModuleBuilder<P = any, C extends descriptors.Module = desc
 			descriptor = first;
 		}
 
-
 		let builder = new RemoteCommandBuilder(this, this._server);
 		if (descriptor) {
 			builder.descriptor(descriptor);
+		}
+
+		if (handler) {
+			builder.handler(handler);
 		}
 
 		this._commands.set(name, builder);
@@ -509,6 +512,7 @@ export class InnerModuleBuilder extends ModuleBuilder {
 
 export class RootModuleBuilder extends ModuleBuilder<ConnectorBuilder, descriptors.RootModule> {
 	private _remoteBase: string;
+	private _remoteAuth: "basic";
 
 	constructor(parent: ConnectorBuilder, serverBuilder: server.ServerBuilder) {
 		super(parent, serverBuilder);
@@ -516,6 +520,11 @@ export class RootModuleBuilder extends ModuleBuilder<ConnectorBuilder, descripto
 
 	base(remoteBase: string): this {
 		this._remoteBase = remoteBase;
+		return this;
+	}
+
+	auth(type: "basic"): this {
+		this._remoteAuth = type;
 		return this;
 	}
 
@@ -532,6 +541,10 @@ export class RootModuleBuilder extends ModuleBuilder<ConnectorBuilder, descripto
 
 		if (this._remoteBase) {
 			descriptor.remote.base = this._remoteBase;
+		}
+
+		if (this._remoteAuth) {
+			descriptor.remote.auth = this._remoteAuth;
 		}
 
 		const proxy = this._server.getProxy();
