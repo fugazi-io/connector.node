@@ -9,7 +9,7 @@ import * as descriptors from "./common/descriptors";
 import { ConnectorBuilder } from "./connector";
 import * as server from "./server";
 import "./encodeurl";
-import encodeUrl = require('encodeurl')
+import encodeUrl = require("encodeurl");
 
 export abstract class ComponentBuilder<P, C extends descriptors.Component> {
 	protected _parent: P;
