@@ -8,6 +8,7 @@ That includes:
 * The ability to add (remote) commands as js objects and functions
 * Automatically adds [remote config](https://github.com/fugazi-io/webclient/blob/master/docs/components/modules.md#remote-module)
 * Supports [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) or serves a proxy frame instead
+* Supports session state
 * A ready to use logger
 
 ## Installing
