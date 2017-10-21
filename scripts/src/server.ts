@@ -139,7 +139,6 @@ type Route = {
 };
 
 export class ServerBuilder {
-	public static readonly DEFAULT_HOST = "localhost";
 	public static readonly DEFAULT_PORT = 3333;
 
 	private static readonly PROXY_PATH = "/proxyframe";
@@ -311,8 +310,8 @@ export class ServerBuilder {
 		return this._port || ServerBuilder.DEFAULT_PORT;
 	}
 
-	private getHost(): string {
-		return this._host || ServerBuilder.DEFAULT_HOST;
+	private getHost(): string | undefined {
+		return this._host;
 	}
 }
 
@@ -324,12 +323,12 @@ export interface Server {
 class _Server implements Server {
 	private koa: Koa;
 	private port: number;
-	private host: string;
+	private host: string | undefined;
 	private router: Router;
 	private server: http.Server | null;
 	private logger: winston.LoggerInstance;
 
-	constructor(host: string,
+	constructor(host: string | undefined,
 				port: number,
 				cors: false | Cors.Options,
 				logger: winston.LoggerInstance,
@@ -377,10 +376,18 @@ class _Server implements Server {
 
 	start(): Promise<void> {
 		return new Promise<void>(resolve => {
-			this.server = this.koa.listen(this.port, this.host, () => {
-				this.logger.info(`server started. listening on ${ this.host }:${ this.port }`);
-				resolve();
-			});
+			if (this.host) {
+				this.server = this.koa.listen(this.port, this.host, () => {
+					this.logger.info(`server started. listening on ${ this.host }:${ this.port }`);
+					resolve();
+				});
+			} else {
+				this.server = this.koa.listen(this.port, () => {
+					this.host = this.server!.address().address;
+					this.logger.info(`server started. listening on ${ this.host }:${ this.port }`);
+					resolve();
+				});
+			}
 		});
 	}
 

@@ -66,6 +66,6 @@ if (require && require.main === module) {
 	process.on("SIGTERM", cleanup.bind(null, connector.logger));
 
 	connector.start().then(() => {
-		connector.logger.info("connector started");
+		connector.logger.info(`connector ${ VERSION } started`);
 	});
 }
