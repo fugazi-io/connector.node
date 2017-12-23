@@ -236,14 +236,14 @@ export class ServerBuilder {
 					type: "root-module",
 					path: `/${ name }.js`,
 					method: "get",
-					handler: serveJsModule.bind(this, descriptor)
+					handler: serveJsModule.bind(this, this.getOrigin(), descriptor)
 				}
 			} else {
 				route = {
 					type: "root-module",
 					path: `/${ name }.json`,
 					method: "get",
-					handler: serveJSONModule.bind(this, descriptor)
+					handler: serveJSONModule.bind(this, this.getOrigin(), descriptor)
 				}
 			}
 			routes.push(route);
@@ -463,14 +463,25 @@ class _Server implements Server {
 	}
 }
 
-function serveJSONModule(module: descriptors.NamedModule, ctx: Koa.Context) {
+function serveJSONModule(this: never, baseUrl: string, module: descriptors.NamedModule, ctx: Koa.Context) {
 	ctx.type = "application/json";
-	ctx.body = module;
+	ctx.body = verifyBaseUrl(baseUrl, module, ctx);
 }
 
-function serveJsModule(module: descriptors.NamedModule, ctx: Koa.Context) {
+function serveJsModule(this: never, baseUrl: string, module: descriptors.NamedModule, ctx: Koa.Context) {
 	ctx.type = "application/javascript";
-	ctx.body = "(function() { fugazi.components.modules.descriptor.loaded(" + JSON.stringify(module) + "); })()";
+	ctx.body = "(function() { fugazi.components.modules.descriptor.loaded(" + verifyBaseUrl(baseUrl, module, ctx) + "); })()";
+}
+
+function verifyBaseUrl(baseUrl: string, module: descriptors.NamedModule, ctx: Koa.Context): string {
+	const serialized = JSON.stringify(module);
+	const rightBase = `http://${ ctx.host }`;
+
+	if (rightBase !== baseUrl) {
+		return serialized.replace(new RegExp(baseUrl, "g"), rightBase);
+	}
+
+	return serialized;
 }
 
 async function commandHandlerWrapper(handler: CommandHandler, ctx: Router.IRouterContext, next: () => Promise<any>) {
